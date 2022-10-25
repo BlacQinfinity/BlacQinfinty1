@@ -1,0 +1,68 @@
+package main
+
+import (
+    "context"
+    "fmt"
+    "github.com/ethereum/go-ethereum/ethclient"
+)
+
+func main() {
+    const url = "https://<*BlacQINFINITY*>:<*BlacQINFINITY*>@apis.ankr.com/7d81a612bef6498a82c09894d9cfc33d/bd57073d791fc08863d512e81e91bac5/eth/fast/main"  // url string
+    
+    rpcClient,err := ethclient.Dial(url)
+    
+    if err != nil {
+        panic(err)
+    }
+    
+    blockNumber, err := rpcClient.BlockNumber(context.Background())
+    
+    if err != nil {
+        panic(err)
+    }
+    
+    fmt.Println(blockNumber)
+}
+package main
+
+import (
+    "context"
+    "fmt"
+    "github.com/ethereum/go-ethereum/core/types"
+    "github.com/ethereum/go-ethereum/ethclient"
+    "time"
+)
+
+func main() {
+    const url = "wss://<*BlacQINFINITY*>:<*BlacQINFINITY*>@apis.ankr.com/wss/7d81a612bef6498a82c09894d9cfc33d/bd57073d791fc08863d512e81e91bac5/eth/fast/main"  // url string
+    
+    client, err := ethclient.Dial(url)
+    
+    if err != nil {
+        panic(err)
+    }
+    
+    ch := make(chan *types.Header, 1024)
+    sub, err := client.SubscribeNewHead(context.Background(), ch)
+    
+    if err != nil {
+        panic(err)
+    }
+    
+    fmt.Println("---subscribe-----")
+
+    go func() {
+        time.Sleep(10 * time.Second)
+        fmt.Println("---unsubscribe-----")
+        sub.Unsubscribe()
+    }()
+
+    go func() {
+        for c := range ch {
+            fmt.Println(c.Number)
+        }
+    }()
+
+    <-sub.Err()
+
+}
